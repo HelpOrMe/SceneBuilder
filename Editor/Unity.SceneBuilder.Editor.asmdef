@@ -1,0 +1,14 @@
+{
+    "name": "Unity.SceneBuilder.Editor",
+    "references": [
+        "Unity.SceneBuilder"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}
