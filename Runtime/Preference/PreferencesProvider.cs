@@ -11,8 +11,9 @@ namespace SceneBuilder
         private static SerializedObject m_serializedInstance;
 
         public static readonly string PathToContent = "Packages/com.sah_ed.scenebuilder/Content";
-        public static readonly string PathToPreferencesAsset = PathToContent + "/Preferences/PreferenceManager.asset";
+        public static readonly string PathToPreferencesAsset = PathToContent + "/Preferences/PreferencesObject.asset";
         public static readonly string PathToDefaultBrushObjects = PathToContent + "/DefaultBrushModels";
+        public static readonly string PathToDefaultIcons = PathToContent + "/DefaultBrushIcons";
 
         public PreferencesProvider(string path, SettingsScope scope = SettingsScope.User) : base(path, scope) { }
 
@@ -26,9 +27,21 @@ namespace SceneBuilder
                     m_instance = ScriptableObject.CreateInstance<PreferencesObject>();
                     AssetDatabase.CreateAsset(m_instance, PathToPreferencesAsset);
                     AssetDatabase.SaveAssets();
+                    LoadDefaultIcons();
                 }
             }
             return m_instance;
+        }
+
+        public static void LoadDefaultIcons()
+        {
+            PreferencesObject preferences = GetPreferences();
+            preferences.DefaultBrushIcons = new Texture2D[2]
+            {
+                AssetDatabase.LoadAssetAtPath<Texture2D>(PathToDefaultIcons + "/Default Brush icon.png"),
+                AssetDatabase.LoadAssetAtPath<Texture2D>(PathToDefaultIcons + "/Default Object Brush icon.png"),
+            };
+            preferences.EditorPlayModePreviewIcon = preferences.DefaultBrushIcons[0];
         }
 
         public static SerializedObject GetSerializedPreferences()

@@ -10,11 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2c767df149c85a14698e54a07c6bccd7, type: 3}
-  m_Name: PreferenceManager
+  m_Name: PreferencesObject
   m_EditorClassIdentifier: 
   PathToBrushes: Assets/SceneBuilder/Brushes
   DefaultBrushIcons:
-  - {fileID: 2800000, guid: 8f21a1245a8c6194d8be8951f177f8f0, type: 3}
-  - {fileID: 2800000, guid: ab503618631a6cf41955dea9cc17a07e, type: 3}
-  EditorPlayModePreviewIcon: {fileID: 2800000, guid: 8f21a1245a8c6194d8be8951f177f8f0,
-    type: 3}
+  - {fileID: 0}
+  - {fileID: 0}
+  EditorPlayModePreviewIcon: {fileID: 0}
