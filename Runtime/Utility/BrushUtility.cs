@@ -28,6 +28,11 @@ namespace SceneBuilder
             }
         }
 
+        public static T CreateNewBrush<T>(string name = "New Brush", bool focusOn = false) where T : Brush
+        {
+            return (T)CreateNewBrush(typeof(T), name, focusOn);
+        }
+
         public static object CreateNewBrush(Type brushType, string name = "New Brush", bool focusOn = false)
         {
             if (!brushType.IsSubclassOf(typeof(Brush)))
@@ -42,15 +47,10 @@ namespace SceneBuilder
 
             if (focusOn)
             {
-                EditorUtility.FocusProjectWindow();
                 Selection.activeObject = newBrush;
+                EditorUtility.FocusProjectWindow();
             }
             return newBrush;
-        }
-
-        public static T CreateNewBrush<T>(string name = "New Brush", bool focusOn = false) where T : Brush
-        {
-            return (T)CreateNewBrush(typeof(T), name, focusOn);
         }
 
         public static void AddBrush(Brush brush)

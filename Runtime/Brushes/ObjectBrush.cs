@@ -26,30 +26,34 @@ namespace SceneBuilder
         public bool MoveToMesh = true;
         public bool RotateByMesh = true;
 
-        public bool useRandomPositionOffset = false;
-        public RandomType randomPositionType = RandomType.Range;
-        public Vector3 randomPositionRangesMin = -Vector3.one;
-        public Vector3 randomPositionRangesMax = Vector3.one;
-        public bool randomPositionsShowed = false;
-        public Vector3[] randomPositions = Array.Empty<Vector3>();
+        public RandomOffsetSettings randomPositionOffset = new RandomOffsetSettings();
+        public RandomOffsetSettings randomRotationOffset = new RandomOffsetSettings();
+        public RandomOffsetSettings randomScaleOffset = new RandomOffsetSettings();
 
-        public bool useRandomRotationOffset = false;
-        public RandomType randomRotationType = RandomType.Range;
-        public Vector3 randomRotationRangesMin = -Vector3.one * 360;
-        public Vector3 randomRotationRangesMax = Vector3.one * 360;
-        public bool randomRotationsShowed = false;
-        public Vector3[] randomRotations = Array.Empty<Vector3>();
-
-        public bool useRotationOffset = false;
-        public Vector3 rotationOffset = Vector3.zero;
-
-        public bool usePositionOffset = false;
-        public Vector3 positionOffset = Vector3.zero;
+        public OffsetSettings positionOffset = new OffsetSettings();
+        public OffsetSettings rotationOffset = new OffsetSettings();
+        public OffsetSettings scaleOffset = new OffsetSettings();
 
         public bool RandomSet = false;
         public float RandomSetPercent = 1f;
         public bool useEnemyColliders = false;
         public string[] enemyColliderNames = Array.Empty<string>();
+    }
+
+    public class RandomOffsetSettings
+    {
+        public bool useOffset = false;
+        public RandomType randomType = RandomType.Range;
+        public Vector3 randomRangesMin = -Vector3.one;
+        public Vector3 randomRangesMax = Vector3.one;
+        public bool randomArrayShowed = false;
+        public Vector3[] randomArray = Array.Empty<Vector3>();
+    }
+
+    public class OffsetSettings
+    {
+        public bool useOffset = false;
+        public Vector3 offset;
     }
 #pragma warning restore CA2235 // Mark all non-serializable fields
 

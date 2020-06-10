@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Globalization;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -212,13 +213,15 @@ namespace SceneBuilderEditor
 
                 string mtm = settings.MoveToMesh ? on : off;
                 string rbm = settings.RotateByMesh ? on : off;
-                string rpo = settings.useRandomPositionOffset ? on : off;
-                string rrt = settings.useRandomRotationOffset ? on : off;
+                string upo = settings.positionOffset.useOffset ? on : off;
+                string uro = settings.rotationOffset.useOffset ? on : off;
+                string uso = settings.scaleOffset.useOffset ? on : off;
 
                 if (GUILayout.Button($"MtM[{mtm}]", labelStyle, GUILayout.MaxWidth(45))) settings.MoveToMesh = !settings.MoveToMesh;
                 if (GUILayout.Button($"RbM[{rbm}]", labelStyle, GUILayout.MaxWidth(45))) settings.RotateByMesh = !settings.RotateByMesh;
-                if (GUILayout.Button($"RPO[{rpo}]", labelStyle, GUILayout.MaxWidth(45))) settings.useRandomPositionOffset = !settings.useRandomPositionOffset;
-                if (GUILayout.Button($"RRT[{rrt}]", labelStyle, GUILayout.MaxWidth(45))) settings.useRandomRotationOffset = !settings.useRandomRotationOffset;
+                if (GUILayout.Button($"uPO[{upo}]", labelStyle, GUILayout.MaxWidth(45))) settings.positionOffset.useOffset = !settings.positionOffset.useOffset;
+                if (GUILayout.Button($"uRO[{uro}]", labelStyle, GUILayout.MaxWidth(45))) settings.rotationOffset.useOffset = !settings.rotationOffset.useOffset;
+                if (GUILayout.Button($"uSO[{uso}]", labelStyle, GUILayout.MaxWidth(45))) settings.scaleOffset.useOffset = !settings.scaleOffset.useOffset;
             }
 
             // Draw name field
@@ -238,74 +241,16 @@ namespace SceneBuilderEditor
                 BrushEditorUtility.SetSpace(() => settings.MoveToMesh = EditorGUILayout.Toggle("Move to mesh", settings.MoveToMesh), 1);
                 BrushEditorUtility.SetSpace(() => settings.RotateByMesh = EditorGUILayout.Toggle("Rotate by mesh", settings.RotateByMesh), 1);
 
-                // Draw random position offset
-                BrushEditorUtility.SetSpace(
-                    () => settings.useRandomPositionOffset = EditorGUILayout.Toggle("Random position offset", settings.useRandomPositionOffset), 1);
-                if (settings.useRandomPositionOffset)
-                {
-                    BrushEditorUtility.SetSpace(
-                        () => settings.randomPositionType = (RandomType)EditorGUILayout.EnumPopup("Random position type", settings.randomPositionType), 2);
-                    switch (settings.randomPositionType)
-                    {
-                        case RandomType.Range:
-                            BrushEditorUtility.SetSpace(
-                                () => settings.randomPositionRangesMin = EditorGUILayout.Vector3Field("Min", settings.randomPositionRangesMin), 3);
-                            BrushEditorUtility.SetSpace(
-                                () => settings.randomPositionRangesMax = EditorGUILayout.Vector3Field("Max", settings.randomPositionRangesMax), 3);
-                            break;
+                // Draw offsets
+                DrawOffsetSettngsField(settings.positionOffset, "position");
+                DrawOffsetSettngsField(settings.rotationOffset, "rotation");
+                DrawOffsetSettngsField(settings.scaleOffset, "scale");
 
-                        case RandomType.Between:
-                            BrushEditorUtility.SetSpace(
-                                () => settings.randomPositionsShowed = EditorGUILayout.Foldout(settings.randomPositionsShowed, "Between positions", true), 2);
-                            if (settings.randomPositionsShowed)
-                                settings.randomPositions = BrushEditorUtility.ArrayField(EditorGUILayout.Vector3Field, settings.randomPositions, "Pos", 3);
-                            break;
-                    }
-                }
-
-                // Draw random rotation offset
-                BrushEditorUtility.SetSpace(
-                    () => settings.useRandomRotationOffset = EditorGUILayout.Toggle("Random rotation offset", settings.useRandomRotationOffset), 1);
-                if (settings.useRandomRotationOffset)
-                {
-                    BrushEditorUtility.SetSpace(
-                        () => settings.randomRotationType = (RandomType)EditorGUILayout.EnumPopup("Random rotation type", settings.randomRotationType), 2);
-                    switch (settings.randomRotationType)
-                    {
-                        case RandomType.Range:
-                            BrushEditorUtility.SetSpace(
-                                () => settings.randomRotationRangesMin = EditorGUILayout.Vector3Field("Min", settings.randomRotationRangesMin), 3);
-                            BrushEditorUtility.SetSpace(
-                                () => settings.randomRotationRangesMax = EditorGUILayout.Vector3Field("Max", settings.randomRotationRangesMax), 3);
-                            break;
-
-                        case RandomType.Between:
-                            BrushEditorUtility.SetSpace(
-                                () => settings.randomRotationsShowed = EditorGUILayout.Foldout(settings.randomRotationsShowed, "Between rotations", true), 2);
-                            if (settings.randomRotationsShowed)
-                                settings.randomRotations = BrushEditorUtility.ArrayField(EditorGUILayout.Vector3Field, settings.randomRotations, "Rot", 3);
-                            break;
-                    }
-                }
-
-                // Draw position offset
-                BrushEditorUtility.SetSpace(
-                    () => settings.usePositionOffset = EditorGUILayout.Toggle("Use position offset", settings.usePositionOffset), 1);
-                if (settings.usePositionOffset)
-                {
-                    BrushEditorUtility.SetSpace(
-                    () => settings.positionOffset = EditorGUILayout.Vector3Field("Position offset", settings.positionOffset), 2);
-                }
-
-                // Draw rotation offset
-                BrushEditorUtility.SetSpace(
-                    () => settings.useRotationOffset = EditorGUILayout.Toggle("Use rotation offset", settings.useRotationOffset), 1);
-                if (settings.useRotationOffset)
-                {
-                    BrushEditorUtility.SetSpace(
-                    () => settings.rotationOffset = EditorGUILayout.Vector3Field("Rotation offset", settings.rotationOffset), 2);
-                }
-
+                // Draw random offsets
+                DrawRandomOffsetSettingsField(settings.randomPositionOffset, "position");
+                DrawRandomOffsetSettingsField(settings.randomRotationOffset, "rotation");
+                DrawRandomOffsetSettingsField(settings.randomScaleOffset, "scale");
+                
                 // Draw random set
                 BrushEditorUtility.SetSpace(
                     () => settings.RandomSet = EditorGUILayout.Toggle("Random set", settings.RandomSet), 1);
@@ -323,6 +268,47 @@ namespace SceneBuilderEditor
                     settings.enemyColliderNames = BrushEditorUtility.ArrayField(EditorGUILayout.TextField, settings.enemyColliderNames, "Col. name", 2);
                 }
                 EditorGUILayout.Space();
+            }
+        }
+
+        public void DrawOffsetSettngsField(OffsetSettings settings, string name)
+        {
+            BrushEditorUtility.SetSpace(
+                    () => settings.useOffset = EditorGUILayout.Toggle($"Use {name} offset", settings.useOffset), 1);
+            if (settings.useOffset)
+            {
+                BrushEditorUtility.SetSpace(
+                () => settings.offset = EditorGUILayout.Vector3Field($"{CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name)} offset", settings.offset), 2);
+            }
+        }
+
+        public void DrawRandomOffsetSettingsField(RandomOffsetSettings settings, string name)
+        {
+            // Draw random position offset
+            BrushEditorUtility.SetSpace(
+                () => settings.useOffset = EditorGUILayout.Toggle($"Random {name} offset", settings.useOffset), 1);
+            if (settings.useOffset)
+            {
+                BrushEditorUtility.SetSpace(
+                    () => settings.randomType = (RandomType)EditorGUILayout.EnumPopup($"Random {name} type", settings.randomType), 2);
+                switch (settings.randomType)
+                {
+                    case RandomType.Range:
+                        BrushEditorUtility.SetSpace(
+                            () => settings.randomRangesMin = EditorGUILayout.Vector3Field("Min", settings.randomRangesMin), 3);
+                        BrushEditorUtility.SetSpace(
+                            () => settings.randomRangesMax = EditorGUILayout.Vector3Field("Max", settings.randomRangesMax), 3);
+                        break;
+
+                    case RandomType.Between:
+                        BrushEditorUtility.SetSpace(
+                            () => settings.randomArrayShowed = EditorGUILayout.Foldout(settings.randomArrayShowed, $"Between {name}s", true), 2);
+                        if (settings.randomArrayShowed)
+                        {
+                            settings.randomArray = BrushEditorUtility.ArrayField(EditorGUILayout.Vector3Field, settings.randomArray, CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name), 3);
+                        }
+                        break;
+                }
             }
         }
         #endregion

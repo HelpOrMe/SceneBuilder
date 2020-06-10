@@ -62,6 +62,7 @@ namespace SceneBuilder
             GameObject obj = m_useBrush.drawObjects[index];
             Vector3 position = hit.point + obj.transform.localPosition;
             Quaternion rotation = obj.transform.rotation;
+            Vector3 scale = obj.transform.localScale;
             Vector3 normal = settings.RotateByMesh ? hit.normal : Vector3.up;
 
             if (settings.RotateByMesh)
@@ -85,55 +86,15 @@ namespace SceneBuilder
                 }
             }
 
-            if (settings.useRandomPositionOffset)
-            {
-                switch (settings.randomPositionType)
-                {
-                    case (RandomType.Range):
-                        position += new Vector3(
-                            Random.Range(settings.randomPositionRangesMin.x, settings.randomPositionRangesMax.x),
-                            Random.Range(settings.randomPositionRangesMin.y, settings.randomPositionRangesMax.y),
-                            Random.Range(settings.randomPositionRangesMin.z, settings.randomPositionRangesMax.z));
-                        break;
+            // Handle random offset
+            position = HandleRandomOffset(settings.randomPositionOffset, position);
+            rotation = Quaternion.Euler(HandleRandomOffset(settings.randomRotationOffset, rotation.eulerAngles));
+            scale = HandleRandomOffset(settings.randomScaleOffset, scale);
 
-                    case (RandomType.Between):
-                        if (settings.randomPositions.Length > 0)
-                        {
-                            position += settings.randomPositions[Random.Range(0, settings.randomPositions.Length - 1)];
-                        }
-                        break;
-                }
-            }
-
-            if (settings.useRandomRotationOffset)
-            {
-                switch (settings.randomRotationType)
-                {
-                    case (RandomType.Range):
-                        rotation = Quaternion.Euler(rotation.eulerAngles + new Vector3(
-                            Random.Range(settings.randomRotationRangesMin.x, settings.randomRotationRangesMax.x),
-                            Random.Range(settings.randomRotationRangesMin.y, settings.randomRotationRangesMax.y),
-                            Random.Range(settings.randomRotationRangesMin.z, settings.randomRotationRangesMax.z)));
-                        break;
-
-                    case (RandomType.Between):
-                        if (settings.randomRotations.Length > 0)
-                        {
-                            rotation = Quaternion.Euler(rotation.eulerAngles + settings.randomRotations[Random.Range(0, settings.randomRotations.Length - 1)]);
-                        }
-                        break;
-                }
-            }
-
-            if (settings.usePositionOffset)
-            {
-                position += settings.positionOffset;
-            }
-
-            if (settings.useRotationOffset)
-            {
-                rotation = Quaternion.Euler(rotation.eulerAngles + settings.rotationOffset);
-            }
+            // Handle offset
+            position = HandleOffset(settings.positionOffset, position);
+            rotation = Quaternion.Euler(HandleOffset(settings.rotationOffset, rotation.eulerAngles));
+            scale = HandleOffset(settings.scaleOffset, scale);
 
             if (settings.useEnemyColliders)
             {
@@ -172,9 +133,43 @@ namespace SceneBuilder
                 obj = obj,
                 position = position,
                 rotation = rotation,
+                scale = scale,
                 normal = normal,
                 hit = hit,
             };
+        }
+
+        private static Vector3 HandleOffset(OffsetSettings settings, Vector3 value)
+        {
+            if (settings.useOffset)
+            {
+                value += settings.offset;
+            }
+            return value;
+        }
+
+        private static Vector3 HandleRandomOffset(RandomOffsetSettings settings, Vector3 value)
+        {
+            if (settings.useOffset)
+            {
+                switch (settings.randomType)
+                {
+                    case (RandomType.Range):
+                        value += new Vector3(
+                            Random.Range(settings.randomRangesMin.x, settings.randomRangesMax.x),
+                            Random.Range(settings.randomRangesMin.y, settings.randomRangesMax.y),
+                            Random.Range(settings.randomRangesMin.z, settings.randomRangesMax.z));
+                        break;
+
+                    case (RandomType.Between):
+                        if (settings.randomArray.Length > 0)
+                        {
+                            value += settings.randomArray[Random.Range(0, settings.randomArray.Length - 1)];
+                        }
+                        break;
+                }
+            }
+            return value;
         }
 
         public static void EditRotation(ObjectData data)
@@ -190,7 +185,7 @@ namespace SceneBuilder
                 Event.current.Use();  // Skip tool hotkey
                 ToolsFunctions[SetObject] = false;
                 m_rotationKey = true;
-                data.settings.useRotationOffset = true;
+                data.settings.rotationOffset.useOffset = true;
             }
 
             // If the rotation key was pressed
@@ -199,7 +194,7 @@ namespace SceneBuilder
                 Vector3 normal = data.normal;
                 Vector3 position = data.position;
                 ModelSettings settings = data.settings;
-                Vector3 from = Quaternion.Euler(settings.rotationOffset) * (Vector3.right * 0.6f);
+                Vector3 from = Quaternion.Euler(settings.rotationOffset.offset) * (Vector3.right * 0.6f);
 
                 // Arc
                 Handles.color = new Color(255, 255, 255, 0.3f);
@@ -210,7 +205,7 @@ namespace SceneBuilder
 
                 float x = Event.current.delta.x;
                 float y = Event.current.delta.y;
-                settings.rotationOffset += normal * (Mathf.Abs(x) > Mathf.Abs(y) ? x : y);
+                settings.rotationOffset.offset += normal * (Mathf.Abs(x) > Mathf.Abs(y) ? x : y);
             }
         }
 
@@ -256,6 +251,7 @@ namespace SceneBuilder
             GameObject obj = data.obj;
             Vector3 position = data.position;
             Quaternion rotation = data.rotation;
+            Vector3 scale = data.scale;
 
             // Set object
             if ((Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag) &&
@@ -267,7 +263,9 @@ namespace SceneBuilder
                     parent = null;
                     Selection.activeTransform = null;
                 }
-                Instantiate(obj, position, rotation, parent).name = obj.name;
+                GameObject newObject = Instantiate(obj, position, rotation, parent);
+                newObject.name = obj.name;
+                newObject.transform.localScale = scale;
             }
         }
 
@@ -309,6 +307,7 @@ namespace SceneBuilder
             public GameObject obj;
             public Vector3 position;
             public Quaternion rotation;
+            public Vector3 scale;
             public Vector3 normal;
             public RaycastHit hit;
         }

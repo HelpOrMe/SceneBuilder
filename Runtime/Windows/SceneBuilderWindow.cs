@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
@@ -56,6 +55,7 @@ namespace SceneBuilder.Windows
 
         public void RemoveBrush(bool focus = true)
         {
+            brush.subBrushes.Clear();
             brush = null;
             brushEditor = null;
             if (focus) 
